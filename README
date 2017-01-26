@@ -1,0 +1,14 @@
+This code came from a contracting firm that claimed that an medium experienced java programmer wrote this stuff.
+
+I think this might actually have been after I moved duplicated strings into psf ones. The first deliveries had a mix of shared psf strings and duplicated (except for a few typos) instances.
+
+The CISOmessage class is an example of just how bad the coding was. An ISO8583 message begins with a hex string for 64 bits indicating which fields are present in the message.
+Each field has a known fixed length. This class presumed it knew what the bitmap was, and failed miserably when unexpected fields were sent.
+
+An early version tried to honor the bitmap/bitarray, but since java didn't provide a parser for 64 bit integers they devised one using floating point.
+Note that floating point is slow, and the target machine was a low-powered PC. Also note that 64 bit floating point has a 52 bit mantissa. Once any bit past 2^52 or so is set the lsbs are lost.
+It happens that the fields related to the lsbits are usually present any rather significant.
+
+The project manager insisted that the only type to be returned from any function was a pass/fail boolean.
+Also note the debug message mechanism required checking flags at every point of use, perhaps to make the programrun faster when debug is disabled. Since programs involving multiple threads are sensitive to timing it is a bad idea to have your production code run slower than your development version. In fact there is no good reason for you to not ship the code that you spend most of your time interacting with, except maybe concerns about reverse engineering. Having your debug facility still in place in shipped code is the right thing to do.
+What is saved mostly is the time spent formatting the debug message, wasted time if you aren't going to print it. However, at a previous employ (and the idea was someone else's but I liked it) the last 100 or so suppressed messages were kept around in the debug message service and output retroactively when a serious error was emitted, to give some info/warning context leading up to the fault. 
